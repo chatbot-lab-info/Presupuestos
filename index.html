@@ -67,7 +67,21 @@ try{var t=localStorage.getItem('ingenia-theme')||(matchMedia('(prefers-color-sch
     </div>
     <div class="hero-visual">
       <div class="logo-glow" aria-hidden="true"></div>
-      <img class="hero-logo hero-anim hd2" src="logo-header.png" alt="Logo de iNGENIA">
+      <div class="hero-gallery">
+        <div class="g-cell g-large tilt-3d slide-in-left">
+          <video class="g-media" autoplay muted loop playsinline preload="metadata" poster="producto-video-1-poster.jpg">
+            <source src="producto-video-1.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="g-cell g-top tilt-3d slide-in-right">
+          <img class="g-media" src="producto-foto-1.jpg" alt="Panel de gestión de INGENIA" loading="lazy" decoding="async">
+        </div>
+        <div class="g-cell g-bottom tilt-3d slide-in-right gd2">
+          <video class="g-media" autoplay muted loop playsinline preload="metadata" poster="producto-video-2-poster.jpg">
+            <source src="producto-video-2.mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
     </div>
   </div>
 </section>

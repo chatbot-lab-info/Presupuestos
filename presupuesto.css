@@ -8,14 +8,6 @@
 .name-accent{ overflow-wrap: anywhere; }
 .hero-question.small{ font-size: clamp(1.4rem, 4.6vw, 2.2rem); }
 
-/* logo grande flotando en el hero */
-.hero-logo{
-  position: relative; z-index: 1; width: min(15rem, 56vw); height: auto;
-  filter: drop-shadow(0 22px 34px rgba(37,99,235,0.28));
-  animation: floatY 7s ease-in-out infinite;
-}
-@keyframes floatY{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-10px); } }
-@media (prefers-reduced-motion: reduce){ .hero-logo{ animation: none; } }
 
 .hero-tag{
   margin: 1.1rem 0 0; font-family: 'General Sans','Geist',system-ui,sans-serif;
