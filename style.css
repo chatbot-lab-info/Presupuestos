@@ -1,0 +1,629 @@
+/* ============================================================
+   INGENIA — hoja de estilos compartida
+   v2: estética glass con acento 3D. El "3D" se resuelve con UNA sola
+   capa de imagen (perspective + rotate3d, sin transform-style:preserve-3d
+   y sin mix-blend-mode) — esa combinación fue la que rompió todo en la
+   versión anterior. El fondo de color detrás del vidrio lleva z-index
+   explícito desde el día uno. Todo el movimiento sigue siendo CSS puro:
+   nada depende de JS para que el contenido aparezca.
+   ============================================================ */
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/geist:vf@latest/latin-wght-normal.woff2) format('woff2-variations');
+}
+
+:root{
+  --bg: #FAFBFF;
+  --surface: #F2F5FC;
+  --surface-2: #E8EDFA;
+  --border: rgba(11,17,32,0.10);
+  --ink: #0B1120;
+  --ink-dim: rgba(11,17,32,0.64);
+  --ink-faint: rgba(11,17,32,0.44);
+  --blue: #2563EB;
+  --blue-deep: #173F9E;
+  --blue-soft: #6C9BFA;
+  --orange: #F97316;
+  --shadow-sm: 0 1px 2px rgba(11,17,32,0.06);
+  --shadow-md: 0 10px 30px rgba(11,17,32,0.08);
+  --shadow-lg: 0 20px 50px rgba(37,99,235,0.16);
+  --shell: 72rem;
+  --radius-card: 1.4rem;
+  --radius-pill: 999px;
+  --glass-bg: rgba(255,255,255,0.66);
+  --glass-border: rgba(37,99,235,0.24);
+  --glass-blur: blur(20px) saturate(220%);
+  --glass-highlight: rgba(255,255,255,0.95);
+
+  /* el footer es una "tarjeta" a propósito invertida respecto del resto
+     de la página (negra de día, blanca de noche) — por eso vive en sus
+     propios tokens en vez de heredar --bg/--ink directamente. */
+  --footer-bg: #0E1526;
+  --footer-ink: #F7F9FF;
+  --footer-ink-dim: rgba(247,249,255,0.68);
+  --footer-surface: rgba(247,249,255,0.10);
+  --footer-border: rgba(247,249,255,0.20);
+
+  color-scheme: light;
+}
+
+/* ---------- modo nocturno ----------
+   Se activa con [data-theme="dark"] en <html>. El toggle vive en
+   site.js (persiste la elección en localStorage) y un pequeño script
+   inline en el <head> de cada página aplica el atributo ANTES de que
+   pinte el CSS, para que no haya parpadeo de tema equivocado. Sin ese
+   script (JS bloqueado), el sitio se queda en modo día — nunca se
+   rompe ni pierde contraste, solo no ofrece el cambio. */
+:root[data-theme="dark"]{
+  --bg: #0A0F1C;
+  --surface: #121A2E;
+  --surface-2: #1B2540;
+  --border: rgba(255,255,255,0.12);
+  --ink: #F3F6FF;
+  --ink-dim: rgba(243,246,255,0.68);
+  --ink-faint: rgba(243,246,255,0.46);
+  --blue: #4C82F0;
+  --blue-deep: #1E4FC2;
+  --blue-soft: #86AEFB;
+  --orange: #FB923C;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 10px 30px rgba(0,0,0,0.45);
+  --shadow-lg: 0 20px 50px rgba(76,130,240,0.32);
+  --glass-bg: rgba(22,30,52,0.74);
+  --glass-border: rgba(134,174,251,0.30);
+  --glass-highlight: rgba(255,255,255,0.16);
+
+  --footer-bg: #F5F7FF;
+  --footer-ink: #0A0F1C;
+  --footer-ink-dim: rgba(10,15,28,0.64);
+  --footer-surface: rgba(10,15,28,0.06);
+  --footer-border: rgba(10,15,28,0.14);
+
+  color-scheme: dark;
+}
+
+*{ box-sizing: border-box; }
+html{ background: var(--bg); }
+body{
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Geist', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  transition: background-color .25s ease, color .25s ease;
+}
+h1, h2, h3, .wordmark{ font-family: 'General Sans', 'Geist', system-ui, sans-serif; }
+
+a{ color: inherit; }
+img{ max-width: 100%; display: block; }
+::selection{ background: rgba(37,99,235,0.2); }
+:focus-visible{ outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 4px; }
+
+/* ---------- fondo de color fijo detrás de todo, para que el vidrio tenga qué
+   traslucir. z-index:-1 explícito: sin esto, este panel pinta ENCIMA
+   del contenido normal de las secciones en vez de detrás. ---------- */
+.atmo{ position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.atmo-blob{ position: absolute; border-radius: 50%; filter: blur(60px); will-change: transform; }
+.atmo-b1{ width: 34rem; height: 34rem; top: -10rem; left: -10rem; background: radial-gradient(circle, #4C82F0 0%, transparent 72%); opacity: .55; animation: driftA 26s ease-in-out infinite alternate; }
+.atmo-b2{ width: 30rem; height: 30rem; top: 4%; right: -10rem; background: radial-gradient(circle, #2563EB 0%, transparent 72%); opacity: .45; animation: driftB 22s ease-in-out infinite alternate; }
+.atmo-b3{ width: 32rem; height: 32rem; bottom: 6%; left: -10rem; background: radial-gradient(circle, #F97316 0%, transparent 72%); opacity: .22; animation: driftC 30s ease-in-out infinite alternate; }
+.atmo-b4{ width: 28rem; height: 28rem; bottom: -9rem; right: -7rem; background: radial-gradient(circle, #6C9BFA 0%, transparent 72%); opacity: .4; animation: driftA 24s ease-in-out infinite alternate-reverse; }
+.atmo-b5{ width: 32rem; height: 32rem; top: 42%; left: 50%; transform: translate(-50%,-50%); background: radial-gradient(circle, #3D74EE 0%, transparent 70%); opacity: .3; animation: driftB 28s ease-in-out infinite alternate; }
+@keyframes driftA{ from{ transform: translate(0,0) scale(1); } to{ transform: translate(2rem,2.2rem) scale(1.08); } }
+@keyframes driftB{ from{ transform: translate(-50%,-50%) scale(1); } to{ transform: translate(calc(-50% + 2rem),calc(-50% - 1.6rem)) scale(1.06); } }
+@keyframes driftC{ from{ transform: translate(0,0) scale(1); } to{ transform: translate(1.6rem,-1.8rem) scale(1.06); } }
+@media (prefers-reduced-motion: reduce){ .atmo-blob{ animation: none; } }
+
+/* ---------- vidrio: superficie translúcida + borde de luz + sombra elevada ---------- */
+.glass{
+  position: relative;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+}
+.glass::before{
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  padding: 1.1px;
+  background: linear-gradient(160deg,
+    var(--glass-highlight) 0%,
+    rgba(255,255,255,0.25) 25%,
+    rgba(255,255,255,0) 45%,
+    rgba(255,255,255,0) 65%,
+    rgba(37,99,235,0.16) 88%,
+    var(--glass-highlight) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ---------- 3D en hover: una sola capa de transform, sin preserve-3d ---------- */
+.tilt-3d{ transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s ease; }
+@media (hover: hover) and (pointer: fine){
+  .tilt-3d:hover{ transform: perspective(900px) rotateX(3deg) rotateY(-4deg) translateY(-5px); }
+}
+
+.shell{ max-width: var(--shell); margin: 0 auto; padding: 0 1.5rem; }
+@media (min-width: 40rem){ .shell{ padding: 0 2.25rem; } }
+@media (min-width: 64rem){ .shell{ padding: 0 3rem; } }
+
+/* ---------- reveal on scroll: pure CSS, progressively enhanced.
+   Default state is fully visible — nothing ever depends on JS running. ---------- */
+.reveal{ opacity: 1; }
+@supports (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    .reveal{
+      opacity: 0;
+      animation: fadeUp linear forwards;
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
+  }
+}
+@keyframes fadeUp{
+  from{ opacity: 0; transform: translateY(26px); }
+  to{ opacity: 1; transform: translateY(0); }
+}
+
+/* hero content: plays once on load, no scroll/JS dependency at all */
+@keyframes heroIn{
+  from{ opacity: 0; transform: translateY(18px); }
+  to{ opacity: 1; transform: translateY(0); }
+}
+.hero-anim{ opacity: 0; animation: heroIn .7s cubic-bezier(.22,1,.36,1) forwards; }
+.hero-anim.hd0{ animation-delay: .03s; }
+.hero-anim.hd1{ animation-delay: .08s; }
+.hero-anim.hd2{ animation-delay: .18s; }
+.hero-anim.hd3{ animation-delay: .28s; }
+.hero-anim.hd4{ animation-delay: .38s; }
+
+/* mosaico de fotos: el contenedor grande entra deslizando desde la
+   izquierda, los dos chicos desde la derecha — mismo timing/curva que
+   el resto del hero (heroIn) para que se sienta parte de la misma
+   entrada, solo que en vez de subir se deslizan de costado. */
+@keyframes slideInLeft{
+  from{ opacity: 0; transform: translateX(-2.5rem); }
+  to{ opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInRight{
+  from{ opacity: 0; transform: translateX(2.5rem); }
+  to{ opacity: 1; transform: translateX(0); }
+}
+.slide-in-left{ opacity: 0; animation: slideInLeft .7s cubic-bezier(.22,1,.36,1) forwards; animation-delay: .38s; }
+.slide-in-right{ opacity: 0; animation: slideInRight .7s cubic-bezier(.22,1,.36,1) forwards; animation-delay: .46s; }
+.slide-in-right.gd2{ animation-delay: .54s; }
+
+@media (prefers-reduced-motion: reduce){
+  .hero-anim, .reveal, .slide-in-left, .slide-in-right{ animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+
+/* ---------- header ---------- */
+header.site{
+  position: sticky; top: 0; z-index: 40;
+}
+.site-nav{
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; padding-top: 1.1rem; padding-bottom: 1.1rem;
+  /* nunca usar el shorthand "padding" acá: pisaría el padding lateral
+     que pone .shell en este mismo div, y eso fue lo que dejaba el botón
+     de WhatsApp pegado al borde derecho en mobile. */
+}
+.brand{ display: flex; align-items: center; gap: 0.6rem; text-decoration: none; min-width: 0; }
+/* width fluido con clamp(), SIN height fijo: el logo nuevo no es
+   cuadrado (897×743px), así que fijar width y height por igual lo
+   estiraba. height:auto conserva siempre la proporción real. */
+.brand img{ width: clamp(38px, 10vw, 52px); height: auto; flex: none; }
+.site-nav .wordmark{ font-size: clamp(0.94rem, 4vw, 1.3rem); }
+.wordmark{ font-size: 1.2rem; letter-spacing: -0.01em; }
+.wordmark .wm-light{ font-family: 'Montserrat', sans-serif; font-weight: 300; color: var(--ink); }
+.wordmark .wm-bold{ font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--ink); }
+.nav-links{ display: none; align-items: center; gap: 1.75rem; font-size: 0.92rem; font-weight: 500; }
+.nav-links a{ text-decoration: none; color: var(--ink-dim); transition: color .15s ease; }
+.nav-links a:hover{ color: var(--ink); }
+@media (min-width: 56rem){ .nav-links{ display: flex; } }
+.nav-right{ display: flex; align-items: center; gap: clamp(0.35rem, 1.8vw, 0.9rem); flex: none; }
+.ig-link{ display: inline-flex; width: 34px; height: 34px; border-radius: 50%; align-items: center; justify-content: center; background: var(--surface); color: var(--ink-dim); transition: background .15s ease, color .15s ease, transform .15s ease; }
+.ig-link:hover{ background: var(--surface-2); color: var(--ink); transform: translateY(-2px); }
+/* el ig-link del header se mantiene siempre visible (no se toca) —
+   todo el resto se redimensiona con clamp() para que quepa junto a él. */
+.nav-right .ig-link{ width: clamp(27px, 6.5vw, 34px); height: clamp(27px, 6.5vw, 34px); flex: none; }
+.nav-right .ig-link svg{ width: 62%; height: 62%; }
+.nav-right .btn{
+  font-size: clamp(0.68rem, 2.7vw, 0.92rem);
+  padding: 0.7em 1.05em;
+  white-space: nowrap;
+}
+
+.btn{
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 0.7rem 1.3rem; border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, var(--blue), var(--blue-deep));
+  color: #fff; font-weight: 600; font-size: 0.92rem; text-decoration: none; border: none;
+  box-shadow: 0 8px 20px rgba(37,99,235,0.28);
+  transition: transform .15s ease, box-shadow .2s ease;
+  white-space: nowrap;
+}
+.btn:hover{ box-shadow: 0 10px 24px rgba(37,99,235,0.36); }
+.btn:active{ transform: scale(0.97); }
+.btn.btn-lg{ padding: 1rem 1.8rem; font-size: 1rem; }
+.btn.btn-outline{
+  background: var(--surface); color: var(--ink); box-shadow: none; border: 1px solid var(--border);
+}
+.btn.btn-outline:hover{ background: var(--surface-2); }
+
+/* ---------- botón de modo nocturno ---------- */
+.theme-toggle{
+  display: inline-flex; align-items: center; justify-content: center;
+  width: clamp(27px, 6.5vw, 34px); height: clamp(27px, 6.5vw, 34px);
+  border-radius: 50%; flex: none; padding: 0; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--border); color: var(--ink-dim);
+  transition: background .15s ease, color .15s ease, transform .15s ease;
+}
+.theme-toggle:hover{ background: var(--surface-2); color: var(--ink); transform: translateY(-2px); }
+.theme-toggle svg{ width: 60%; height: 60%; }
+.theme-toggle .icon-moon{ display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-sun{ display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-moon{ display: block; }
+
+/* ---------- hero ---------- */
+.hero{ padding: 3.2rem 0 2.5rem; position: relative; overflow: hidden; }
+.hero-grid{ display: grid; grid-template-columns: 1fr; gap: 2.5rem; align-items: center; }
+@media (min-width: 60rem){ .hero-grid{ grid-template-columns: 1.15fr 0.85fr; gap: 3rem; } }
+/* sin min-width:0 acá, un item de grid nunca encoge por debajo del ancho
+   de su contenido — eso era lo que dejaba el cta-row (y sus botones)
+   más ancho que la pantalla en mobile, aunque el botón individual ya
+   tuviera flex-shrink habilitado: el desborde pasaba un nivel más arriba. */
+.hero-text{ min-width: 0; }
+
+.eyebrow{
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-size: 0.85rem; font-weight: 500; color: var(--ink-dim);
+  padding: 0.35rem 0.85rem; border-radius: var(--radius-pill);
+  background: var(--surface); border: 1px solid var(--border);
+}
+.eyebrow .dot{ width: 7px; height: 7px; border-radius: 50%; background: var(--orange); flex: none; }
+
+h1{
+  margin: 1.1rem 0 0; font-weight: 600; letter-spacing: -0.02em; line-height: 1.06;
+  font-size: clamp(2.1rem, 6.5vw, 3.5rem);
+}
+
+/* "Somos iNGENIA." arriba del título: misma tipografía, tamaño y
+   alineación (izquierda, igual que el h1) que "Ordenamos tu negocio.",
+   negro y sin animación (a propósito no lleva hero-anim ni
+   gradient-text). "iNGEN"/"IA" van en Montserrat light/bold, como en
+   el wordmark del header — mismo criterio, tamaño heredado del h1 en
+   vez del tamaño chico del header. */
+.hero-question{
+  margin: 1.1rem 0 0;
+  font-family: 'General Sans', 'Geist', system-ui, sans-serif;
+  font-weight: 600; letter-spacing: -0.02em; line-height: 1.06;
+  font-size: clamp(2.1rem, 6.5vw, 3.5rem);
+  color: var(--ink);
+  text-align: left;
+}
+.hero-question .wm-light{ font-family: 'Montserrat', sans-serif; font-weight: 300; }
+.hero-question .wm-bold{ font-family: 'Montserrat', sans-serif; font-weight: 700; }
+/* menos aire entre "Somos iNGENIA." y "Ordenamos tu negocio." que el
+   que h1 trae por defecto respecto de cualquier otro elemento. */
+.hero-question + h1{ margin-top: 0.2rem; }
+
+/* ---------- título con gradiente animado (efecto "shimmer") ----------
+   Mismo patrón que la página de nutrición: un gradiente ancho que se
+   desliza en loop sobre el texto vía background-position. Se define
+   con color sólido primero como fallback — si el navegador no soporta
+   background-clip:text, el texto queda igual de legible.
+   IMPORTANTE: aplicar esta clase a un <span> adentro del h1, nunca al
+   mismo elemento que ya tiene "hero-anim" — "animation" es una sola
+   propiedad CSS, así que dos reglas que la definen sobre el MISMO
+   elemento no se combinan: la última en cascada pisa por completo a la
+   otra. Con hero-anim y gradient-text juntas en el h1, el fade-in de
+   entrada (heroIn) quedaba pisado por el shimmer y el título nunca
+   pasaba de opacity:0 — invisible para siempre. Separar el shimmer en
+   un span hijo evita el choque. */
+.gradient-text{
+  color: var(--ink);
+  background-image: linear-gradient(90deg,
+    var(--blue) 0%,
+    var(--blue-soft) 18%,
+    #9B7BF0 36%,
+    var(--orange) 54%,
+    #9B7BF0 72%,
+    var(--blue-soft) 88%,
+    var(--blue) 100%);
+  background-size: 250% 100%;
+  background-position: 0% 50%;
+}
+@supports ((background-clip: text) or (-webkit-background-clip: text)){
+  .gradient-text{
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientSweep 7s linear infinite;
+  }
+}
+@keyframes gradientSweep{
+  0%{ background-position: 0% 50%; }
+  100%{ background-position: -250% 50%; }
+}
+@media (prefers-reduced-motion: reduce){
+  .gradient-text{ animation: none; background-position: 30% 50%; }
+}
+.lede{ margin: 1.1rem 0 0; max-width: 42ch; font-size: 1.08rem; line-height: 1.6; color: var(--ink-dim); }
+/* Los dos CTA siempre van uno al lado del otro, nunca apilados.
+   font-size fluido con clamp() + padding en "em" (así el padding
+   encoge en la misma proporción que el texto) — probado de 320px a
+   desktop para que ninguno de los dos botones se corte. A partir de
+   ~30rem ya entran a tamaño completo (1rem / mismo padding que btn-lg). */
+/* flex-grow:1 en los botones: además de no cortarse, el bloque
+   entero se estira para llegar exactamente hasta el mismo borde
+   derecho que el botón de WhatsApp del header (los dos viven dentro
+   de un .shell con el mismo padding lateral). max-width evita que se
+   estire de más en tablets de una sola columna. */
+.cta-row{ margin-top: 1.7rem; display: flex; flex-wrap: nowrap; gap: clamp(0.4rem, 2vw, 0.8rem); max-width: 30rem; }
+.cta-row .btn{
+  flex: 1 1 auto; min-width: 0;
+  font-size: clamp(0.66rem, 3vw, 1rem);
+  padding: 0.8em 0.9em;
+  white-space: nowrap;
+}
+
+.hero-visual{ position: relative; display: flex; align-items: center; justify-content: center; min-height: 18rem; perspective: 1200px; }
+.logo-glow{
+  position: absolute; width: 26rem; height: 26rem; border-radius: 50%;
+  background: radial-gradient(circle, rgba(37,99,235,0.24) 0%, rgba(37,99,235,0) 70%);
+  filter: blur(10px);
+  animation: glowPulse 6s ease-in-out infinite;
+}
+@keyframes glowPulse{ 0%,100%{ transform: scale(1); opacity: .9; } 50%{ transform: scale(1.08); opacity: 1; } }
+@media (min-width: 60rem){ .logo-glow{ width: 32rem; height: 32rem; } }
+@media (prefers-reduced-motion: reduce){ .logo-glow{ animation: none; } }
+
+/* ---------- mosaico de fotos/video (reemplaza al logo 3D) ----------
+   1 contenedor grande + 2 chicos, cantos bien redondeados y alternados
+   (arco de un lado, arco del otro) para que se vea "orgánico" en vez
+   de simples rectángulos. Cada .g-cell es el molde final: para cargar
+   contenido de verdad, metés adentro un <img class="g-media" src="...">
+   o un <video class="g-media" autoplay muted loop playsinline><source
+   src="..."></video> — el molde (tamaño, recorte, cantos) ya está
+   armado, así que no hace falta tocar el CSS. Mientras no haya
+   fotos/video reales, se ve el placeholder con el ícono. */
+.hero-gallery{
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1.15fr 1fr; grid-template-rows: 1fr 1fr;
+  gap: 0.9rem; width: 100%; max-width: 23rem; aspect-ratio: 0.94;
+}
+.g-cell{
+  position: relative; overflow: hidden;
+  background: linear-gradient(150deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+  display: flex; align-items: center; justify-content: center;
+}
+.g-cell.g-large{ grid-column: 1; grid-row: 1 / 3; border-radius: 3.4rem 1.6rem 3.4rem 1.6rem; }
+.g-cell.g-top{ grid-column: 2; grid-row: 1; border-radius: 1.4rem 2.6rem 1.4rem 2.6rem; }
+.g-cell.g-bottom{ grid-column: 2; grid-row: 2; border-radius: 2.6rem 1.4rem 2.6rem 1.4rem; }
+.g-media{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.g-placeholder{
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  color: var(--ink-faint); text-align: center; padding: 0 0.6rem;
+}
+.g-placeholder svg{ width: 1.9rem; height: 1.9rem; opacity: 0.55; }
+.g-placeholder span{ font-size: 0.68rem; font-weight: 600; letter-spacing: 0.02em; line-height: 1.3; }
+@media (min-width: 60rem){ .hero-gallery{ max-width: 27rem; } }
+
+/* ---------- sections ---------- */
+.section{ padding: 3.5rem 0; }
+.section-head{ max-width: 40rem; }
+.section-head h2{
+  font-size: clamp(1.6rem, 4.5vw, 2.3rem); font-weight: 600; letter-spacing: -0.01em; margin: 0 0 0.7rem;
+}
+.section-head p{ margin: 0; color: var(--ink-dim); font-size: 1.02rem; line-height: 1.6; }
+.section-tint{ background: var(--surface); }
+
+/* ---------- problem cards: mismo carrusel que "Cómo trabajamos" ---------- */
+.problems-carousel{ margin-top: 2.2rem; }
+
+/* ---------- service cards (home grid) ---------- */
+.services-grid{ margin-top: 2.2rem; display: grid; grid-template-columns: 1fr; gap: 1.2rem; }
+@media (min-width: 44rem){ .services-grid{ grid-template-columns: 1fr 1fr; } }
+.service-card{
+  display: block; text-decoration: none; color: inherit;
+  border-radius: var(--radius-card);
+  padding: 1.75rem; box-shadow: var(--shadow-sm);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.service-card:hover{ box-shadow: var(--shadow-lg); }
+.service-card .icon{
+  width: 2.75rem; height: 2.75rem; border-radius: 0.9rem;
+  background: linear-gradient(135deg, var(--blue), var(--blue-deep));
+  display: flex; align-items: center; justify-content: center; color: #fff; margin-bottom: 1.1rem;
+}
+.service-card h3{ font-size: 1.2rem; font-weight: 600; margin: 0 0 0.5rem; letter-spacing: -0.01em; }
+.service-card p{ margin: 0; font-size: 0.94rem; line-height: 1.55; color: var(--ink-dim); }
+.service-card .go{ margin-top: 1rem; font-size: 0.88rem; font-weight: 600; color: var(--blue); display: inline-flex; align-items: center; gap: 0.35rem; }
+.service-card:hover .go{ text-decoration: underline; }
+
+/* ---------- process steps: carrusel que auto-rota, sin JS ---------- */
+.steps-carousel{
+  position: relative; margin-top: 2.2rem; border-radius: var(--radius-card);
+  padding: 2.6rem 2rem 3.2rem; min-height: 13rem; overflow: hidden;
+  max-width: 36rem; box-shadow: var(--shadow-md);
+}
+.step-slide{
+  position: absolute; inset: 2.6rem 2rem 3.2rem; opacity: 0;
+}
+.step-slide .step-num{
+  font-family: 'General Sans', sans-serif; font-size: 1.9rem; font-weight: 700;
+  color: var(--blue-soft); line-height: 1;
+}
+.step-slide h3{ font-size: 1.2rem; font-weight: 600; margin: 0.6rem 0 0.5rem; }
+.step-slide p{ margin: 0; font-size: 0.98rem; line-height: 1.55; color: var(--ink-dim); max-width: 30ch; }
+.steps-dots{ position: absolute; bottom: 1.3rem; left: 2rem; display: flex; gap: 0.5rem; }
+.steps-dots .dot{ width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--border); border: none; padding: 0; cursor: pointer; }
+
+/* 18s totales / 3 tarjetas = 6s cada una (2s más que antes por pedido
+   explícito, para dar más tiempo de lectura). Los porcentajes solo
+   corren el "hold" central; el fade-in/out se mantiene igual de rápido
+   (~0.5s) para que la transición se siga sintiendo ágil. */
+@keyframes slideCycle{
+  0%{ opacity: 0; transform: translateX(18px); }
+  3%{ opacity: 1; transform: translateX(0); }
+  31%{ opacity: 1; transform: translateX(0); }
+  34%{ opacity: 0; transform: translateX(-18px); }
+  100%{ opacity: 0; }
+}
+@keyframes dotCycle{
+  0%,100%{ background: var(--border); }
+  3%{ background: var(--blue); }
+  31%{ background: var(--blue); }
+  34%{ background: var(--border); }
+}
+.step-slide{ animation: slideCycle 18s ease-in-out infinite; }
+.steps-dots .dot{ animation: dotCycle 18s ease-in-out infinite; }
+.problem-slide .step-num{ color: var(--orange); }
+
+/* ---------- modo interactivo (JS): reemplaza el ciclo automático por
+   un riel que se desliza de verdad — la tarjeta actual sale por un
+   costado y la siguiente entra desde afuera, como en el carrusel de
+   "Cómo pedimos" de Casa de Pollos. Se anima con "transform" + transition.
+
+   OJO con esto — .carousel-viewport es la pieza clave: un wrapper
+   NUEVO, sin backdrop-filter ni animación propia, cuyo único trabajo es
+   "overflow:hidden". Antes ese recorte vivía directo en .steps-carousel
+   (la misma tarjeta con el glass + la animación de aparición al hacer
+   scroll), y eso disparaba un bug de pintado en Chromium/Safari: la
+   tarjeta siguiente se "escapaba" del borde redondeado durante/después
+   de la transición — el layout siempre estuvo bien, fallaba solo el
+   recorte en GPU cuando coincidían overflow:hidden + backdrop-filter +
+   un hijo animado con transform en el MISMO elemento. Separar el
+   recorte a un contenedor propio, sin glass ni animación, evita esa
+   combinación por completo. .carousel-viewport y .carousel-track son
+   wrappers "invisibles" en el resto de los modos (sin position propio,
+   así el position:absolute de .step-slide sigue resolviendo contra
+   .steps-carousel como siempre). Si site.js no corre, la clase
+   .js-carousel nunca se agrega y el carrusel de arriba (animation-delay
+   + keyframes) sigue funcionando solo, igual que siempre. ---------- */
+.js-carousel{ touch-action: pan-y; }
+.js-carousel .carousel-viewport{
+  position: relative; overflow: hidden; border-radius: inherit;
+}
+.js-carousel .carousel-track{
+  display: flex;
+  transition: transform .5s cubic-bezier(.22,1,.36,1);
+}
+.js-carousel .step-slide{
+  position: static; inset: auto; opacity: 1; animation: none; transform: none;
+  flex: none; min-width: 0;
+}
+.js-carousel .steps-dots .dot{ animation: none; background: var(--border); transition: background .2s ease, transform .2s ease; }
+.js-carousel .steps-dots .dot.is-active{ background: var(--blue); }
+.js-carousel .steps-dots .dot:hover{ transform: scale(1.3); }
+/* sin animación, mostramos los 3 pasos apilados y visibles — nunca ocultos */
+@media (prefers-reduced-motion: reduce){
+  .steps-carousel{ position: static; padding: 0; min-height: 0; box-shadow: none; background: none; border: none; display: grid; gap: 1.5rem; max-width: none; }
+  .steps-carousel::before{ display: none; }
+  .carousel-viewport{ display: contents; }
+  .carousel-track{ display: contents; }
+  .step-slide{ position: static; opacity: 1; animation: none; }
+  .steps-dots{ display: none; }
+}
+@media (min-width: 48rem) and (prefers-reduced-motion: reduce){
+  .steps-carousel{ grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ---------- closing CTA ---------- */
+.closing{
+  border-radius: 1.8rem; background: linear-gradient(135deg, var(--blue), var(--blue-deep));
+  padding: 2.6rem 1.6rem; text-align: center; color: #fff;
+}
+@media (min-width: 40rem){ .closing{ padding: 3.4rem 2rem; } }
+.closing h2{ font-size: clamp(1.6rem, 5vw, 2.2rem); font-weight: 600; margin: 0 0 0.7rem; letter-spacing: -0.01em; }
+.closing p{ margin: 0 auto 1.6rem; max-width: 34ch; color: rgba(255,255,255,0.85); font-size: 1rem; line-height: 1.6; }
+.closing .btn{ background: #fff; color: var(--blue-deep); box-shadow: 0 10px 26px rgba(0,0,0,0.18); }
+.closing .btn:hover{ box-shadow: 0 12px 30px rgba(0,0,0,0.24); }
+.closing .cta-links{ margin-top: 1.4rem; display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; }
+.closing .btn-ig{ background: rgba(255,255,255,0.14); color: #fff; box-shadow: none; border: 1px solid rgba(255,255,255,0.4); }
+.closing .btn-ig:hover{ background: rgba(255,255,255,0.24); }
+
+/* ---------- footer ----------
+   A propósito es una "tarjeta" con más contraste que el resto de la
+   página, no una franja más al fondo: negra de día, blanca de noche
+   (--footer-* se invierten solos en modo oscuro, ver :root arriba).
+   Vértices superiores redondeados; los inferiores quedan rectos porque
+   es lo último de la página. */
+footer.site{
+  margin-top: 2.5rem; padding: 2.6rem 0 2.8rem;
+  background: var(--footer-bg); color: var(--footer-ink);
+  border-radius: 1.8rem 1.8rem 0 0;
+}
+.footer-row{ display: flex; flex-direction: column; gap: 1.2rem; align-items: flex-start; }
+@media (min-width: 40rem){ .footer-row{ flex-direction: row; align-items: center; justify-content: space-between; } }
+.footer-brand{ display: flex; align-items: center; gap: 0.6rem; }
+/* height:auto (no un cuadrado fijo) para no deformar el logo — la
+   imagen real no es cuadrada, así que forzar 32x32 la estiraba. */
+.footer-brand img{ width: 32px; height: auto; flex: none; }
+.footer-brand .wordmark .wm-light,
+.footer-brand .wordmark .wm-bold{ color: var(--footer-ink); }
+.footer-tagline{ margin: 0.35rem 0 0; font-size: 0.85rem; color: var(--footer-ink-dim); }
+.footer-links{ display: flex; gap: 1.1rem; align-items: center; }
+.footer-links .ig-link{ background: var(--footer-surface); color: var(--footer-ink); }
+.footer-links .ig-link:hover{ background: var(--footer-border); color: var(--footer-ink); }
+.footer-links .btn-outline{ background: transparent; color: var(--footer-ink); border: 1px solid var(--footer-border); }
+.footer-links .btn-outline:hover{ background: var(--footer-surface); }
+
+/* ---------- service detail pages ---------- */
+.back-link{ display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; font-weight: 500; color: var(--ink-dim); text-decoration: none; margin-bottom: 1.2rem; }
+.back-link:hover{ color: var(--ink); }
+
+.feature-list{ margin: 1.5rem 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.9rem; max-width: 34rem; }
+.feature-list li{ display: flex; align-items: flex-start; gap: 0.7rem; font-size: 0.98rem; line-height: 1.5; color: var(--ink-dim); }
+.feature-list .check{ flex: none; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--surface-2); color: var(--blue); display: flex; align-items: center; justify-content: center; margin-top: 0.1rem; }
+
+/* animated example widget: pure CSS step-cycle, no JS */
+.demo-widget{
+  border-radius: var(--radius-card);
+  padding: 1.6rem; box-shadow: var(--shadow-md); max-width: 26rem;
+}
+.demo-widget .demo-label{ font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); margin-bottom: 1rem; }
+.demo-steps{ display: flex; flex-direction: column; gap: 0.7rem; }
+.demo-step{
+  display: flex; align-items: center; gap: 0.7rem; padding: 0.75rem 0.9rem;
+  border-radius: 0.9rem; background: var(--surface); border: 1px solid transparent;
+  opacity: 0.45; transition: opacity .3s ease;
+}
+.demo-step .bullet{ width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--bg); border: 2px solid var(--border); flex: none; display: flex; align-items: center; justify-content: center; }
+.demo-step span.txt{ font-size: 0.92rem; color: var(--ink); font-weight: 500; }
+@media (prefers-reduced-motion: no-preference){
+  .demo-step{ animation: stepCycle 6s ease-in-out infinite; }
+  .demo-step:nth-child(1){ animation-delay: 0s; }
+  .demo-step:nth-child(2){ animation-delay: 2s; }
+  .demo-step:nth-child(3){ animation-delay: 4s; }
+}
+@keyframes stepCycle{
+  0%{ opacity: 0.45; }
+  8%{ opacity: 1; }
+  33%{ opacity: 1; }
+  41%{ opacity: 0.45; }
+  100%{ opacity: 0.45; }
+}
+.demo-step.is-active-fallback{ opacity: 1; }
+
+.case-box{
+  margin-top: 2.2rem; padding: 1.4rem 1.6rem; border-radius: var(--radius-card);
+  max-width: 42rem;
+}
+.case-box .case-label{ font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--blue); margin-bottom: 0.5rem; }
+.case-box p{ margin: 0; font-size: 0.96rem; line-height: 1.6; color: var(--ink-dim); }
+
+.detail-hero{ padding: 2.6rem 0 1rem; }
+.detail-grid{ display: grid; grid-template-columns: 1fr; gap: 2.5rem; align-items: start; margin-top: 2rem; }
+@media (min-width: 56rem){ .detail-grid{ grid-template-columns: 1fr 1fr; align-items: center; } }

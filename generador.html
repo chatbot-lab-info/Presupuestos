@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<script>try{var t=localStorage.getItem('ingenia-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generador de links de presupuesto</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#2563EB">
+<link rel="icon" type="image/png" href="icon-32.png">
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@500,600,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="presupuesto.css">
+</head>
+<body>
+
+<div class="atmo" aria-hidden="true">
+  <div class="atmo-blob atmo-b1"></div><div class="atmo-blob atmo-b2"></div>
+  <div class="atmo-blob atmo-b3"></div><div class="atmo-blob atmo-b4"></div>
+  <div class="atmo-blob atmo-b5"></div>
+</div>
+
+<header class="site glass">
+  <div class="shell site-nav">
+    <a class="brand" href="generador.html">
+      <img src="logo-header.png" alt="">
+      <span class="wordmark"><span class="wm-light">iNGEN</span><span class="wm-bold">IA</span></span>
+    </a>
+    <div class="nav-right">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-label="Cambiar a modo nocturno">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="section">
+  <div class="shell">
+    <div class="section-head" style="margin:0 auto 2rem;text-align:center">
+      <h2>Generador de links.</h2>
+      <p>Escribí el nombre del negocio o de la persona y copiá el link del presupuesto.</p>
+    </div>
+
+    <div class="gen glass">
+      <label class="field">
+        <span>Nombre del negocio o de la persona</span>
+        <input id="nombre" type="text" inputmode="text" autocomplete="off" maxlength="60" placeholder="Ej.: Casa de Pollos">
+      </label>
+      <label class="field">
+        <span>Dirección de la página de presupuestos</span>
+        <input id="base" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://tuusuario.github.io/presupuestos/">
+        <small>Se guarda en este dispositivo: la completás una sola vez.</small>
+      </label>
+
+      <div class="out" id="out" aria-live="polite">El link va a aparecer acá.</div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-lg is-off" id="copiar">Copiar link</button>
+        <a class="btn btn-lg btn-outline is-off" id="abrir" target="_blank" rel="noopener" href="#">Ver el presupuesto</a>
+        <a class="btn btn-lg btn-outline is-off" id="wa" target="_blank" rel="noopener" href="#">Enviar por WhatsApp</a>
+      </div>
+      <p class="toast" id="toast" role="status"></p>
+    </div>
+  </div>
+</section>
+
+<script src="site.js" defer></script>
+<script>
+(function(){
+  var KEY = 'ingenia-presupuesto-base';
+  var $ = function(id){ return document.getElementById(id); };
+  var nombre = $('nombre'), base = $('base'), out = $('out'), toast = $('toast');
+  var copiar = $('copiar'), abrir = $('abrir'), wa = $('wa');
+  var link = '';
+
+  /* base: lo guardado, o la carpeta donde está alojado este mismo archivo */
+  var saved = '';
+  try { saved = localStorage.getItem(KEY) || ''; } catch(e) {}
+  if (!saved && /^https?:/.test(location.protocol)) {
+    saved = location.href.split('#')[0].split('?')[0].replace(/[^\/]*$/, '');
+  }
+  base.value = saved;
+
+  function setOff(node, off){ node.classList.toggle('is-off', off); }
+
+  function render(){
+    var n = nombre.value.replace(/\s+/g, ' ').trim();
+    var b = base.value.trim();
+    try { localStorage.setItem(KEY, b); } catch(e) {}
+    if (!n || !/^https?:\/\//i.test(b)) {
+      link = '';
+      out.textContent = !n ? 'El link va a aparecer acá.' : 'Falta la dirección de la página de presupuestos.';
+      [copiar, abrir, wa].forEach(function(x){ setOff(x, true); });
+      return;
+    }
+    if (b.charAt(b.length - 1) !== '/' && !/\.html?$/i.test(b)) b += '/';
+    link = b + '?para=' + encodeURIComponent(n);
+    out.textContent = link;
+    abrir.href = link;
+    wa.href = 'https://wa.me/?text=' + encodeURIComponent('Hola! Te paso el presupuesto de iNGENIA para ' + n + ': ' + link);
+    [copiar, abrir, wa].forEach(function(x){ setOff(x, false); });
+  }
+
+  nombre.addEventListener('input', render);
+  base.addEventListener('input', render);
+
+  copiar.addEventListener('click', function(){
+    if (!link) return;
+    var done = function(){ toast.textContent = 'Link copiado.'; setTimeout(function(){ toast.textContent = ''; }, 2500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(link).then(done, fallback);
+    } else { fallback(); }
+    function fallback(){
+      var r = document.createRange(); r.selectNodeContents(out);
+      var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      try { document.execCommand('copy'); done(); } catch(e) { toast.textContent = 'Mantené apretado el link y copialo.'; }
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>
