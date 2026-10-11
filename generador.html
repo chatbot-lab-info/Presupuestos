@@ -56,6 +56,20 @@
         <small>Se guarda en este dispositivo: la completás una sola vez.</small>
       </label>
 
+      <label class="field">
+        <span>Link de la web de demo <em class="opt">(opcional)</em></span>
+        <input id="web" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://...">
+      </label>
+      <label class="field">
+        <span>Link del panel de demo <em class="opt">(opcional)</em></span>
+        <input id="panel" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://script.google.com/...">
+      </label>
+      <label class="field">
+        <span>Contraseña del panel <em class="opt">(opcional)</em></span>
+        <input id="clave" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="80" placeholder="Se muestra con un botón para copiar">
+        <small>Va dentro del link. No se guarda en ningún archivo ni en GitHub.</small>
+      </label>
+
       <div class="out" id="out" aria-live="polite">El link va a aparecer acá.</div>
 
       <div class="btn-row">
@@ -73,7 +87,7 @@
 (function(){
   var KEY = 'ingenia-presupuesto-base';
   var $ = function(id){ return document.getElementById(id); };
-  var nombre = $('nombre'), base = $('base'), out = $('out'), toast = $('toast');
+  var nombre = $('nombre'), base = $('base'), web = $('web'), panel = $('panel'), clave = $('clave'), out = $('out'), toast = $('toast');
   var copiar = $('copiar'), abrir = $('abrir'), wa = $('wa');
   var link = '';
 
@@ -99,6 +113,11 @@
     }
     if (b.charAt(b.length - 1) !== '/' && !/\.html?$/i.test(b)) b += '/';
     link = b + '?para=' + encodeURIComponent(n);
+    var w = web.value.trim(), pa = panel.value.trim(), cl = clave.value.trim();
+    var bad = [];
+    if (w) { if (/^https?:\/\//i.test(w)) link += '&web=' + encodeURIComponent(w); else bad.push('la web'); }
+    if (pa) { if (/^https?:\/\//i.test(pa)) { link += '&panel=' + encodeURIComponent(pa); if (cl) link += '&clave=' + encodeURIComponent(cl); } else bad.push('el panel'); }
+    toast.textContent = bad.length ? 'El link de ' + bad.join(' y de ') + ' tiene que empezar con https://' : '';
     out.textContent = link;
     abrir.href = link;
     wa.href = 'https://wa.me/?text=' + encodeURIComponent('Hola! Te paso el presupuesto de iNGENIA para ' + n + ': ' + link);
@@ -107,6 +126,7 @@
 
   nombre.addEventListener('input', render);
   base.addEventListener('input', render);
+  [web, panel, clave].forEach(function(x){ x.addEventListener('input', render); });
 
   copiar.addEventListener('click', function(){
     if (!link) return;

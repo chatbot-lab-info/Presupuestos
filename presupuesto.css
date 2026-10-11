@@ -142,3 +142,43 @@
 .btn-row .btn{ flex: 1 1 10rem; }
 .btn[disabled], .btn.is-off{ opacity: .45; pointer-events: none; }
 .toast{ margin-top: 0.8rem; min-height: 1.2rem; font-size: 0.88rem; font-weight: 600; color: var(--blue); }
+
+/* ---------- demos (web + panel) ---------- */
+[hidden]{ display: none !important; }
+.demo-grid{ margin-top: 2.2rem; display: grid; grid-template-columns: 1fr; gap: 1.2rem; }
+@media (min-width: 52rem){ .demo-grid:has(.demo:not([hidden]) + .demo:not([hidden])){ grid-template-columns: 1fr 1fr; } }
+.demo{ border-radius: var(--radius-card); padding: 1.8rem 1.6rem; box-shadow: var(--shadow-md); min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.demo .icon{
+  width: 2.75rem; height: 2.75rem; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--blue-deep)); color: #fff;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 1.1rem;
+}
+.demo h3{ margin: 0 0 0.4rem; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; }
+.demo p{ margin: 0; color: var(--ink-dim); font-size: 0.96rem; line-height: 1.55; }
+.demo .btn{ margin-top: 1.3rem; }
+.pass{
+  margin-top: 0.9rem; display: flex; align-items: center; gap: 0.6rem; max-width: 100%;
+  padding: 0.4rem 0.4rem 0.4rem 1rem; border-radius: var(--radius-pill);
+  background: var(--surface); border: 1px solid var(--glass-border);
+}
+.pass code{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1rem; font-weight: 600; color: var(--ink); letter-spacing: 0.02em;
+  overflow-wrap: anywhere; user-select: all;
+}
+.copy-btn{
+  appearance: none; -webkit-appearance: none; flex: none; cursor: pointer; padding: 0;
+  width: 2.4rem; height: 2.4rem; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg); color: var(--blue); border: 1px solid var(--border);
+  transition: background .15s ease, transform .15s ease, color .15s ease;
+}
+.copy-btn:hover{ background: var(--surface-2); }
+.copy-btn:active{ transform: scale(0.93); }
+.copy-btn .i-ok{ display: none; }
+.copy-btn.is-done{ background: var(--blue); color: #fff; border-color: var(--blue); }
+.copy-btn.is-done .i-copy{ display: none; }
+.copy-btn.is-done .i-ok{ display: block; }
+.pass-msg{ min-height: 1.3rem; margin-top: 0.4rem !important; font-size: 0.84rem !important; font-weight: 600; color: var(--blue) !important; }
+
+.field .opt{ font-style: normal; font-weight: 500; color: var(--ink-faint); }

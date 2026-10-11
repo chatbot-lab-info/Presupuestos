@@ -36,6 +36,7 @@ try{var t=localStorage.getItem('ingenia-theme')||(matchMedia('(prefers-color-sch
     </a>
     <nav class="nav-links">
       <a href="#soluciones">Soluciones</a>
+      <a href="#demos" id="nav-demos" hidden>Demos</a>
       <a href="#inversion">Inversión</a>
       <a href="#por-que">Por qué iNGENIA</a>
     </nav>
@@ -118,6 +119,37 @@ try{var t=localStorage.getItem('ingenia-theme')||(matchMedia('(prefers-color-sch
           <li>Clientes</li><li>Proveedores</li><li>Reportes</li><li>Configuración</li>
         </ul>
         <p style="margin-top:1.2rem">Desde un mismo sistema podés registrar ventas, gestionar pedidos, controlar stock, consultar clientes y proveedores y acceder a reportes de tu negocio.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="demos" hidden>
+  <div class="shell">
+    <div class="section-head reveal">
+      <h2>Probá las demos.</h2>
+      <p>Entrá y recorré cada producto como si ya fuera tuyo.</p>
+    </div>
+    <div class="demo-grid">
+      <article class="demo glass tilt-3d reveal" id="demo-web" hidden>
+        <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg></span>
+        <h3>Tu web</h3>
+        <p>Entrá libremente, no necesita contraseña.</p>
+        <a class="btn" id="demo-web-link" href="#" target="_blank" rel="noopener noreferrer">Abrir la web</a>
+      </article>
+      <article class="demo glass tilt-3d reveal" id="demo-panel" hidden>
+        <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span>
+        <h3>Tu panel de gestión</h3>
+        <p>Para ingresar, usá esta contraseña:</p>
+        <div class="pass" id="pass-box" hidden>
+          <code id="pass-text"></code>
+          <button type="button" class="copy-btn" id="pass-copy" aria-label="Copiar contraseña">
+            <svg class="i-copy" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="i-ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
+          </button>
+        </div>
+        <p class="pass-msg" id="pass-msg" role="status"></p>
+        <a class="btn" id="demo-panel-link" href="#" target="_blank" rel="noopener noreferrer">Abrir el panel</a>
       </article>
     </div>
   </div>
@@ -289,6 +321,46 @@ try{var t=localStorage.getItem('ingenia-theme')||(matchMedia('(prefers-color-sch
       a.href = 'https://wa.me/' + nums[a.getAttribute('data-wa')] + '?text=' + encodeURIComponent(msg);
     });
   }
+  /* ---------- demos: ?web=...&panel=...&clave=... (solo http/https) ---------- */
+  (function(){
+    var q; try { q = new URLSearchParams(location.search); } catch(e) { return; }
+    function safeUrl(v){
+      v = (v || '').trim();
+      if (!/^https?:\/\//i.test(v)) return '';
+      try { return new URL(v).href; } catch(e) { return ''; }
+    }
+    var web = safeUrl(q.get('web')), panel = safeUrl(q.get('panel'));
+    var clave = (q.get('clave') || '').trim().slice(0, 80);
+    if (!web && !panel) return;
+    document.getElementById('demos').hidden = false;
+    document.getElementById('nav-demos').hidden = false;
+    if (web) {
+      document.getElementById('demo-web').hidden = false;
+      document.getElementById('demo-web-link').href = web;
+    }
+    if (panel) {
+      document.getElementById('demo-panel').hidden = false;
+      document.getElementById('demo-panel-link').href = panel;
+      if (clave) {
+        document.getElementById('pass-box').hidden = false;
+        document.getElementById('pass-text').textContent = clave;
+        var btn = document.getElementById('pass-copy'), msg = document.getElementById('pass-msg');
+        btn.addEventListener('click', function(){
+          var ok = function(){
+            btn.classList.add('is-done'); msg.textContent = 'Contraseña copiada.';
+            setTimeout(function(){ btn.classList.remove('is-done'); msg.textContent = ''; }, 2200);
+          };
+          var fb = function(){
+            var r = document.createRange(); r.selectNodeContents(document.getElementById('pass-text'));
+            var sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+            try { document.execCommand('copy'); ok(); } catch(e) { msg.textContent = 'Mantené apretada la contraseña para copiarla.'; }
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(clave).then(ok, fb); else fb();
+        });
+      }
+    }
+  })();
+
   select('eco');
 })();
 </script>
